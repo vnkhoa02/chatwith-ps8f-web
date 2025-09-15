@@ -1,15 +1,22 @@
 "use client";
 
 import useLogin from "@/hooks/useLogin";
-import { QRCodeCanvas } from "qrcode.react";
-import { useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useState } from "react";
 
 export default function QRPairing() {
+  const [qrValue, setQrValue] = useState("");
   const { session, status, formattedTime, error, start } = useLogin();
   console.log("session", session);
   useEffect(() => {
     start();
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      setQrValue(JSON.stringify(session));
+    }
+  }, [session]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-6">
@@ -23,10 +30,10 @@ export default function QRPairing() {
 
         <div className="mt-8 flex justify-center">
           <div className="rounded-xl bg-white p-6 shadow-lg">
-            <div className="flex h-56 w-56 items-center justify-center rounded-md bg-gray-800">
+            <div className="flex h-56 w-56 items-center justify-center rounded-md">
               {session ? (
-                <QRCodeCanvas
-                  value={JSON.stringify(session)}
+                <QRCodeSVG
+                  value={qrValue}
                   size={180}
                   bgColor="#ffffff"
                   fgColor="#0f1724"
