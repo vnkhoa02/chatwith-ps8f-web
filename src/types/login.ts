@@ -10,6 +10,15 @@ export interface IDeviceCodeResponse {
 
 export interface IDevicePollingStatus {
   status: string;
+  message?: string;
   user_code: string;
   expires_in: number;
 }
+
+export interface IQrSession {
+  session_id: string;
+  public_key: string;
+  expires_in: number;
+}
+
+export interface ILoginSession extends IDeviceCodeResponse, IQrSession {}

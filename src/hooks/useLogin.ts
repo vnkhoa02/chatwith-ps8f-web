@@ -1,16 +1,26 @@
 "use client";
 
 import qrPairingService from "@/services/QrPairingService";
-import type { IDevicePollingStatus } from "@/types/login";
+import type { IDevicePollingStatus, ILoginSession } from "@/types/login";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
 export default function useLogin() {
-  const sessionMutation = useMutation({
-    mutationFn: () => qrPairingService.createDeviceSession(),
+  const sessionMutation = useMutation<ILoginSession>({
+    mutationFn: async () => {
+      const deviceCode = await qrPairingService.getDeviceCode();
+      const qrSession = await qrPairingService.createQRSession(
+        deviceCode.device_code,
+      );
+      return {
+        ...deviceCode,
+        ...qrSession,
+      };
+    },
   });
 
   const session = sessionMutation.data;
+
   const tokenQuery = useQuery<IDevicePollingStatus>({
     queryKey: ["device-token", session?.device_code],
     queryFn: async () => {
@@ -27,9 +37,6 @@ export default function useLogin() {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
-
-  // expose qrData, status and countdown
-  const qrData = session?.deepLink ?? session?.user_code;
 
   const [secondsLeft, setSecondsLeft] = useState<number>(
     session?.expires_in ?? 0,
@@ -57,11 +64,10 @@ export default function useLogin() {
 
   const status = tokenQuery.data?.status;
   const error =
-    tokenQuery.error?.message ?? sessionMutation.error?.message ?? null;
+    tokenQuery.data?.message ?? sessionMutation.error?.message ?? null;
 
   return {
     session,
-    qrData,
     status,
     error,
     secondsLeft,

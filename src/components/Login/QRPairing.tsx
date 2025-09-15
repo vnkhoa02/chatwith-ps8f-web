@@ -5,7 +5,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useEffect } from "react";
 
 export default function QRPairing() {
-  const { qrData, status, formattedTime, error, start } = useLogin();
+  const { session, status, formattedTime, error, start } = useLogin();
 
   useEffect(() => {
     start();
@@ -24,9 +24,9 @@ export default function QRPairing() {
         <div className="mt-8 flex justify-center">
           <div className="rounded-xl bg-white p-6 shadow-lg">
             <div className="flex h-56 w-56 items-center justify-center rounded-md bg-gray-800">
-              {qrData ? (
+              {session ? (
                 <QRCodeCanvas
-                  value={qrData ?? ""}
+                  value={JSON.stringify(session)}
                   size={180}
                   bgColor="#ffffff"
                   fgColor="#0f1724"
@@ -50,11 +50,9 @@ export default function QRPairing() {
               className={`h-2 w-2 rounded-full ${status === "approved" ? "bg-green-500" : status === "error" ? "bg-red-400" : "bg-gray-400"}`}
             ></span>
             <span>
-              {status === "approved"
-                ? "Approved — signing in"
-                : status === "error"
-                  ? `Error: ${error}`
-                  : "Waiting for scan..."}
+              {status === "pending"
+                ? "Waiting for scan..."
+                : status === "not_found" && `Error: ${error}`}
             </span>
           </div>
         </div>

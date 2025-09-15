@@ -1,5 +1,9 @@
 import { AUTH_CONFIG } from "@/config/auth";
-import type { IDeviceCodeResponse, IDevicePollingStatus } from "@/types/login";
+import type {
+  IDeviceCodeResponse,
+  IDevicePollingStatus,
+  IQrSession,
+} from "@/types/login";
 import { type KeyPair, signMessage } from "@/utils/ed25519";
 import nacl from "tweetnacl";
 import naclUtil from "tweetnacl-util";
@@ -77,8 +81,7 @@ class QrPairingService {
     };
   }
 
-  /** Create device code/session on the Auth server and return deep link info */
-  async createDeviceSession() {
+  async getDeviceCode() {
     const { publicKeyBase64 } = await this.ensureX25519Keys();
 
     const params = new URLSearchParams();
@@ -102,10 +105,29 @@ class QrPairingService {
     }
 
     const resp = (await respFetch.json()) as IDeviceCodeResponse;
+    return resp;
+  }
 
-    const deepLink = `${resp.verification_uri.replace(/\/$/, "")}/device?code=${encodeURIComponent(resp.user_code)}`;
-
-    return { ...resp, deepLink };
+  async createQRSession(deviceCode: string) {
+    const url = `${AUTH_CONFIG.BASE_URL.replace(/\/$/, "")}/api/v1/device/qr/create`;
+    try {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: deviceCode,
+          device_info: {
+            name: "P8 Node Web",
+            model: window?.navigator?.userAgent ?? "Unknown",
+          },
+        }),
+      });
+      const data = (await resp.json()) as IQrSession;
+      if (resp.ok) return data;
+    } catch (e) {
+      console.error("Create QR session attempt failed", e);
+    }
+    throw new Error("Create QR session failed");
   }
 
   async checkDeviceToken(deviceCode: string) {
@@ -115,9 +137,8 @@ class QrPairingService {
       const data = (await resp.json()) as IDevicePollingStatus;
       if (resp.ok) return data;
     } catch (e) {
-      console.warn("Poll attempt failed", e);
+      console.error("checkDeviceToken failed", e);
     }
-
     throw new Error("Device authorization timed out");
   }
 
