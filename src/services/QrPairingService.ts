@@ -8,11 +8,6 @@ import { type KeyPair, signMessage } from "@/utils/ed25519";
 import nacl from "tweetnacl";
 import naclUtil from "tweetnacl-util";
 
-const STORAGE_KEYS = {
-  X25519_PUB: "x25519_pub",
-  X25519_SECRET: "x25519_secret",
-};
-
 class QrPairingService {
   private async getItem(key: string): Promise<string | null> {
     try {
@@ -34,8 +29,8 @@ class QrPairingService {
   /** Ensure X25519 keypair (nacl.box) exists and is persisted */
   async ensureX25519Keys() {
     const [pubB64, secB64] = await Promise.all([
-      this.getItem(STORAGE_KEYS.X25519_PUB),
-      this.getItem(STORAGE_KEYS.X25519_SECRET),
+      this.getItem(AUTH_CONFIG.STORAGE_KEYS.ED_PUB_KEY),
+      this.getItem(AUTH_CONFIG.STORAGE_KEYS.ED_PRIV_KEY),
     ]);
 
     if (pubB64 && secB64) {
@@ -51,8 +46,8 @@ class QrPairingService {
     const secBase64 = naclUtil.encodeBase64(kp.secretKey);
 
     await Promise.all([
-      this.setItem(STORAGE_KEYS.X25519_PUB, pubBase64),
-      this.setItem(STORAGE_KEYS.X25519_SECRET, secBase64),
+      this.setItem(AUTH_CONFIG.STORAGE_KEYS.ED_PUB_KEY, pubBase64),
+      this.setItem(AUTH_CONFIG.STORAGE_KEYS.ED_PRIV_KEY, secBase64),
     ]);
 
     return {
@@ -108,14 +103,14 @@ class QrPairingService {
     return resp;
   }
 
-  async createQRSession(deviceCode: string) {
+  async createQRSession() {
     const url = `${AUTH_CONFIG.BASE_URL.replace(/\/$/, "")}/api/v1/device/qr/create`;
     try {
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          client_id: deviceCode,
+          client_id: "p8-node-desktop",
           device_info: {
             name: "P8 Node Web",
             model: window?.navigator?.userAgent ?? "Unknown",

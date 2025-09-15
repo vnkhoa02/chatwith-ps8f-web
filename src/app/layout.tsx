@@ -1,4 +1,5 @@
 import { ReactQueryClientProvider } from "@/provider/ReactQueryClientProvider";
+import AuthProvider from "@/provider/AuthProvider";
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
@@ -20,9 +21,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ReactQueryClientProvider>
-      <html lang="en" className={`${geist.variable}`}>
-        <body>{children}</body>
-      </html>
+      <AuthProvider>
+        <html lang="en" className={`${geist.variable}`}>
+          <body>{children}</body>
+        </html>
+      </AuthProvider>
     </ReactQueryClientProvider>
   );
 }

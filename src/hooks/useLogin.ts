@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_CONFIG } from "@/config/auth";
 import qrPairingService from "@/services/QrPairingService";
 import type { IDevicePollingStatus, ILoginSession } from "@/types/login";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -9,9 +10,7 @@ export default function useLogin() {
   const sessionMutation = useMutation<ILoginSession>({
     mutationFn: async () => {
       const deviceCode = await qrPairingService.getDeviceCode();
-      const qrSession = await qrPairingService.createQRSession(
-        deviceCode.device_code,
-      );
+      const qrSession = await qrPairingService.createQRSession();
       return {
         ...deviceCode,
         ...qrSession,
@@ -55,6 +54,27 @@ export default function useLogin() {
     );
     return () => clearInterval(t);
   }, [secondsLeft]);
+
+  useEffect(() => {
+    const status = tokenQuery.data?.status;
+    if (status === "approved") {
+      const redirect_uri = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
+      const params = new URLSearchParams();
+      params.append("client_id", "p8-node-desktop");
+      params.append("response_type", "code");
+      params.append("scope", "read write sync");
+      params.append("state", "xcoiv98y2kd22vusuye3kch");
+      params.append(
+        "code_challenge",
+        "Dosch7lYwKvPoPilkhmCE8wb5KAwKtofOfy-qdQG8tY",
+      );
+      params.append("code_challenge_method", "S256");
+      if (redirect_uri) params.append("redirect_uri", redirect_uri);
+      const url = `${AUTH_CONFIG.BASE_URL}/oauth/authorize?scope=read write sync&${params.toString()}`;
+      window.location.href = url;
+      return;
+    }
+  }, [tokenQuery.data?.status]);
 
   const formattedTime = useMemo(() => {
     const m = Math.floor(secondsLeft / 60);

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export default function QRPairing() {
   const { session, status, formattedTime, error, start } = useLogin();
-
+  console.log("session", session);
   useEffect(() => {
     start();
   }, []);
