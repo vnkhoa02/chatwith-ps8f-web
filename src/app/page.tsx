@@ -1,3 +1,6 @@
+import ChatLayout from "@/components/Chat/ChatLayout";
+import { ChatList } from "@/components/Chat/ChatList";
+import ChatWindow from "@/components/Chat/ChatWindow";
 import OauthAuth from "@/components/Login/OauthAuth";
 
 export default async function HomePage({
@@ -7,9 +10,12 @@ export default async function HomePage({
 }) {
   const { code, state } = await searchParams;
   return (
-    <main>
+    <ChatLayout>
       {code && state && <OauthAuth code={code} state={state} />}
-      <h1>Welcome to the Home Page</h1>
-    </main>
+      <div className="grid grid-cols-[320px_1fr]">
+        <ChatList />
+        <ChatWindow />
+      </div>
+    </ChatLayout>
   );
 }
