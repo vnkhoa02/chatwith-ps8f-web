@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_CONFIG } from "@/config/auth";
 import React, {
   createContext,
   useContext,
@@ -7,7 +8,6 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { AUTH_CONFIG } from "@/config/auth";
 
 type AuthState = {
   accessToken: string | null;
@@ -24,17 +24,32 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function parseCookie(name: string): string | null {
+  try {
+    if (typeof document === "undefined") return null;
+    const match = document.cookie.match(
+      new RegExp("(?:^|; )" + name + "=([^;]*)"),
+    );
+    if (!match) return null;
+    const v = match[1];
+    return typeof v === "string" ? decodeURIComponent(v) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function readAuthFromStorage(): AuthState {
   try {
-    const accessToken = localStorage.getItem(
-      AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN,
-    );
-    const refreshToken = localStorage.getItem(
-      AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN,
-    );
-    const expiresAtRaw = localStorage.getItem(
-      AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT,
-    );
+    // prefer cookies (set by OauthAuth) so middleware/server can also rely on them
+    const accessToken =
+      parseCookie("p8fs_access") ??
+      localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+    const refreshToken =
+      parseCookie("p8fs_refresh") ??
+      localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+    const expiresAtRaw =
+      parseCookie("p8fs_expires") ??
+      localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
     const idToken = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.ID_TOKEN);
     const tenantId = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.TENANT_ID);
 

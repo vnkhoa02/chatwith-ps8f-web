@@ -55,24 +55,34 @@ export default function OauthAuth({ code }: OauthAuthProps) {
         }
 
         try {
+          // Store tokens in cookies instead of localStorage so middleware can read them server-side
           if (data.access_token) {
-            localStorage.setItem(
-              AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN,
-              data.access_token,
-            );
+            try {
+              const maxAge = data.expires_in ? Number(data.expires_in) : undefined;
+              const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+              // set access token
+              const accessCookie = `p8fs_access=${encodeURIComponent(String(data.access_token))}; Path=/; SameSite=Lax${secure}${maxAge ? `; Max-Age=${maxAge}` : ""}`;
+              document.cookie = accessCookie;
+
+              // set expires timestamp explicitly so client-side code can read it
+              if (data.expires_in) {
+                const expiresAt = Date.now() + Number(data.expires_in) * 1000;
+                const expiresCookie = `p8fs_expires=${expiresAt}; Path=/; SameSite=Lax${secure}${maxAge ? `; Max-Age=${maxAge}` : ""}`;
+                document.cookie = expiresCookie;
+              }
+            } catch (e) {
+              console.warn("Setting auth cookie failed", e);
+            }
           }
+
           if (data.refresh_token) {
-            localStorage.setItem(
-              AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN,
-              data.refresh_token,
-            );
-          }
-          if (data.expires_in) {
-            const expiresAt = Date.now() + Number(data.expires_in) * 1000;
-            localStorage.setItem(
-              AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT,
-              String(expiresAt),
-            );
+            try {
+              const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+              const refreshCookie = `p8fs_refresh=${encodeURIComponent(String(data.refresh_token))}; Path=/; SameSite=Lax${secure};`;
+              document.cookie = refreshCookie;
+            } catch (e) {
+              console.warn("Setting refresh cookie failed", e);
+            }
           }
           if (data.id_token) {
             localStorage.setItem(
@@ -108,7 +118,7 @@ export default function OauthAuth({ code }: OauthAuthProps) {
     };
 
     run();
-  }, [router]);
+  }, [router, code]);
 
   if (!code) return null;
 
