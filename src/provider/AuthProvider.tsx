@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import Cookies from "js-cookie";
 
 type AuthState = {
   accessToken: string | null;
@@ -24,31 +25,17 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function parseCookie(name: string): string | null {
-  try {
-    if (typeof document === "undefined") return null;
-    const match = document.cookie.match(
-      new RegExp("(?:^|; )" + name + "=([^;]*)"),
-    );
-    if (!match) return null;
-    const v = match[1];
-    return typeof v === "string" ? decodeURIComponent(v) : null;
-  } catch (e) {
-    return null;
-  }
-}
-
 function readAuthFromStorage(): AuthState {
   try {
     // prefer cookies (set by OauthAuth) so middleware/server can also rely on them
     const accessToken =
-      parseCookie("p8fs_access") ??
+      Cookies.get(AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN) ??
       localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
     const refreshToken =
-      parseCookie("p8fs_refresh") ??
+      Cookies.get(AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN) ??
       localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
     const expiresAtRaw =
-      parseCookie("p8fs_expires") ??
+      Cookies.get(AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT) ??
       localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
     const idToken = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.ID_TOKEN);
     const tenantId = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.TENANT_ID);

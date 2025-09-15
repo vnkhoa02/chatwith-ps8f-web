@@ -1,6 +1,7 @@
 "use client";
 
 import { AUTH_CONFIG } from "@/config/auth";
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -55,20 +56,18 @@ export default function OauthAuth({ code }: OauthAuthProps) {
         }
 
         try {
-          // Store tokens in cookies instead of localStorage so middleware can read them server-side
+          // Store tokens in cookies (using js-cookie) so middleware can read them server-side
           if (data.access_token) {
             try {
-              const maxAge = data.expires_in ? Number(data.expires_in) : undefined;
-              const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
-              // set access token
-              const accessCookie = `p8fs_access=${encodeURIComponent(String(data.access_token))}; Path=/; SameSite=Lax${secure}${maxAge ? `; Max-Age=${maxAge}` : ""}`;
-              document.cookie = accessCookie;
+              const opts: Cookies.CookieAttributes = { path: "/", sameSite: "lax" };
+              if (typeof window !== "undefined" && window.location.protocol === "https:") opts.secure = true;
+              if (data.expires_in) opts.expires = new Date(Date.now() + Number(data.expires_in) * 1000);
 
-              // set expires timestamp explicitly so client-side code can read it
+              Cookies.set(AUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, String(data.access_token), opts);
+
               if (data.expires_in) {
                 const expiresAt = Date.now() + Number(data.expires_in) * 1000;
-                const expiresCookie = `p8fs_expires=${expiresAt}; Path=/; SameSite=Lax${secure}${maxAge ? `; Max-Age=${maxAge}` : ""}`;
-                document.cookie = expiresCookie;
+                Cookies.set(AUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, String(expiresAt), { path: "/", sameSite: "lax", secure: opts.secure });
               }
             } catch (e) {
               console.warn("Setting auth cookie failed", e);
@@ -77,9 +76,9 @@ export default function OauthAuth({ code }: OauthAuthProps) {
 
           if (data.refresh_token) {
             try {
-              const secure = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
-              const refreshCookie = `p8fs_refresh=${encodeURIComponent(String(data.refresh_token))}; Path=/; SameSite=Lax${secure};`;
-              document.cookie = refreshCookie;
+              const opts: Cookies.CookieAttributes = { path: "/", sameSite: "lax" };
+              if (typeof window !== "undefined" && window.location.protocol === "https:") opts.secure = true;
+              Cookies.set(AUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, String(data.refresh_token), opts);
             } catch (e) {
               console.warn("Setting refresh cookie failed", e);
             }
@@ -110,7 +109,7 @@ export default function OauthAuth({ code }: OauthAuthProps) {
         }
 
         setStatus("success");
-        setTimeout(() => router.push("/"), 800);
+        setTimeout(() => router.push("/chat"), 800);
       } catch (e: any) {
         setError(String(e?.message ?? e));
         setStatus("error");

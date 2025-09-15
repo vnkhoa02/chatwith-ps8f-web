@@ -1,6 +1,3 @@
-import ChatLayout from "@/components/Chat/ChatLayout";
-import { ChatList } from "@/components/Chat/ChatList";
-import ChatWindow from "@/components/Chat/ChatWindow";
 import OauthAuth from "@/components/Login/OauthAuth";
 
 export default async function HomePage({
@@ -10,12 +7,9 @@ export default async function HomePage({
 }) {
   const { code, state } = await searchParams;
   return (
-    <ChatLayout>
+    <div>
       {code && state && <OauthAuth code={code} state={state} />}
-      <div className="grid grid-cols-[320px_1fr]">
-        <ChatList />
-        <ChatWindow />
-      </div>
-    </ChatLayout>
+      <h1>Hello, welcome to Chatwith-P8F!</h1>
+    </div>
   );
 }
