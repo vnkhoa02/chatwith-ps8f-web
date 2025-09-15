@@ -1,29 +1,55 @@
-# Create T3 App
+# ChatWith PS8F (Web)
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A lightweight web client for interacting with the PS8F assistant and voice-memo features.
 
-## What's next? How do I make an app with this?
+This repository contains a Next.js + React app (app-router) with a desktop-first chat interface, a QR pairing login flow and an OAuth-based token exchange. The UI follows a clean, shadcn-inspired design using Tailwind CSS.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Desktop chat layout with sidebar, conversation list and chat window
+- QR-based device pairing / OAuth device flow for sign-in
+- OAuth code exchange and token storage in cookies (server-friendly)
+- Middleware that redirects unauthenticated users to `/login`
+- Simple auth provider (`src/provider/AuthProvider.tsx`) that reads tokens from cookies
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Quick start
 
-## Learn More
+Prerequisites:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- Node.js (>= 18)
+- npm
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+Install and run:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```bash
+npm install
+npm run dev
+```
 
-## How do I deploy this?
+Open http://localhost:3000
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## Auth flow notes
+
+- The app uses a device/OAuth pairing flow. When the app receives an OAuth `code`, the client exchanges it for tokens at the API and stores the `access_token` and `refresh_token` in cookies (names are declared in `src/config/auth.ts`).
+- A `middleware.ts` at the project root protects top-level routes and redirects to `/login` when the access cookie is missing.
+- The `AuthProvider` reads cookies (via `js-cookie`) to expose `useAuth()` in client components.
+
+## Files of interest
+
+- `src/components/Login/QRPairing.tsx` — QR generator and device pairing UI.
+- `src/components/Login/OauthAuth.tsx` — OAuth token exchange (sets cookies & dispatches `p8fs:login`).
+- `src/provider/AuthProvider.tsx` — React context that reads cookies and exposes auth state.
+- `middleware.ts` — server-side middleware that redirects unauthenticated users to `/login`.
+- `src/app/page.tsx` and `src/components/Chat/*` — Chat UI and layout.
+
+## Development notes
+
+- Tokens are stored in cookies so middleware has server-side access. For better security, consider storing the refresh token in an httpOnly cookie set by the server after a token-exchange endpoint.
+- To centralize cookie names, `src/config/auth.ts` contains `STORAGE_KEYS` used across the app. Keep middleware cookie names in sync if you change them.
+- The UI components are intentionally simple and static; connect them to your real message backends and websockets as needed.
+
+## Next steps & ideas
+
+- Implement httpOnly refresh-token set by server and a refresh endpoint.
+- Add real message storage + sync (websockets, edge functions, or the PS8F API).
+- Improve UX: conversation search, chat pinning, mobile responsive drawer for the sidebar.
