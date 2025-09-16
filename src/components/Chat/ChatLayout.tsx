@@ -1,18 +1,22 @@
 "use client";
 
 import React from "react";
-import NavBar from "@/components/UI/NavBar";
-import Sidebar from "@/components/UI/Sidebar";
+import NavBar from "@/components/ui/NavBar";
+import Sidebar from "@/components/ui/Sidebar";
 
-export default function ChatLayout({ children }: { children: React.ReactNode }) {
+export default function ChatLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-background flex h-screen flex-col">
       <NavBar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-[18rem_1fr] gap-6 mt-6">
-          <Sidebar />
-          <main className="bg-white rounded shadow-sm min-h-[72vh] overflow-hidden">{children}</main>
-        </div>
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="bg-card flex flex-1 flex-col overflow-hidden border-l">
+          {children}
+        </main>
       </div>
     </div>
   );
