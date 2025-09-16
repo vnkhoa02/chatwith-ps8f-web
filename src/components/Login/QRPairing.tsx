@@ -25,7 +25,7 @@ export default function QRPairing() {
           Scan QR Code to Login
         </h2>
         <p className="mt-2 text-sm text-gray-500">
-          Open the Voice Memo Chat app on your mobile device
+          Open the PS8F Chat app on your mobile device
         </p>
 
         <div className="mt-8 flex justify-center">
