@@ -39,14 +39,6 @@ export function MessageList() {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-//   useEffect(() => {
-//     if (!containerRef.current) return;
-//     const viewport = containerRef.current.querySelector(
-//       "[data-radix-scroll-area-viewport]",
-//     ) as HTMLDivElement | null;
-//     if (viewport) viewportRef.current = viewport;
-//   }, []);
-
   return (
     <div ref={containerRef}>
       <ScrollArea>
@@ -73,9 +65,49 @@ export function MessageList() {
   );
 }
 
+const isBase64Audio = (str: string) =>
+  /^[A-Za-z0-9+/=]+$/.test(str) && str.length > 100;
+
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === "user";
   const isSystem = msg.role === "system";
+  const isBase64 = isBase64Audio(msg.content);
+
+  if (isBase64) {
+    return (
+      <div
+        className={cn(
+          "flex gap-3",
+          isUser && "justify-end",
+          isSystem && "opacity-70",
+        )}
+      >
+        {!isUser && !isSystem && (
+          <Button size="icon" className="h-8 w-8 flex-shrink-0">
+            AI
+          </Button>
+        )}
+        <div
+          className={cn(
+            "max-w-full rounded-md border px-4 py-3 text-sm break-words whitespace-pre-wrap shadow-xs",
+            isUser && "bg-primary text-primary-foreground border-primary",
+            !isUser && !isSystem && "bg-card",
+            isSystem && "bg-muted text-muted-foreground border-muted",
+          )}
+          style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}
+        >
+          <audio controls>
+            <source
+              src={`data:audio/wav;base64,${msg.content}`}
+              type="audio/wav"
+            />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(

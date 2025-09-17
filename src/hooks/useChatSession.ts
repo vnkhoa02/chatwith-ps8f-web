@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { useCallback } from "react";
 
 interface SendOptions {
+  isAudio: boolean; // whether the content is audio (for system prompt)
   attachments?: AttachmentBase[];
   model?: string; // custom model id if different
   abortController?: AbortController; // optional external abort
@@ -21,7 +22,7 @@ export function useChatSession() {
   } = useChatStore();
 
   const sendMessage = useCallback(
-    async (content: string, opts?: SendOptions) => {
+    async (content: string, opts: SendOptions) => {
       const trimmed = content.trim();
       if (!trimmed && !opts?.attachments?.length) return;
       addUserMessage(trimmed, opts?.attachments);
@@ -55,6 +56,7 @@ export function useChatSession() {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
+              ...(opts.isAudio ? { "X-Chat-Is-Audio": "true" } : {}),
             },
             body: JSON.stringify(bodyPayload),
           },
