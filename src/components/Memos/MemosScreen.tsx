@@ -1,9 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
-import { MemoFilters } from "./MemoFilters";
-import { QuickRecord } from "./QuickRecord";
-import { MemoList } from "./MemoList";
-import { Pagination } from "./Pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateMemo,
   useDeleteMemo,
@@ -11,16 +7,11 @@ import {
   useToggleFavorite,
 } from "@/hooks/useMemos";
 import type { MemoCategory } from "@/types/memo";
-import { Skeleton } from "@/components/ui/skeleton";
-
-function toast(message: string) {
-  try {
-    // eslint-disable-next-line no-alert
-    alert(message);
-  } catch (e) {
-    console.log("Toast:", message);
-  }
-}
+import { useCallback, useState } from "react";
+import { MemoFilters } from "./MemoFilters";
+import { MemoList } from "./MemoList";
+import { Pagination } from "./Pagination";
+import { QuickRecord } from "./QuickRecord";
 
 export function MemosScreen() {
   const [page, setPage] = useState(1);
@@ -42,7 +33,7 @@ export function MemosScreen() {
 
   const handleRecorded = useCallback(
     (base64: string, durationSec: number) => {
-      if (!title.trim()) return toast("Title required");
+      if (!title.trim()) return console.error("Title required");
       create.mutate(
         {
           title: title.trim(),
@@ -53,9 +44,10 @@ export function MemosScreen() {
         {
           onSuccess: () => {
             setTitle("");
-            toast("Memo saved");
+            console.log("Memo saved");
           },
-          onError: (e: any) => toast(e.message || "Failed to save memo"),
+          onError: (e: any) =>
+            console.error(e.message || "Failed to save memo"),
         },
       );
     },
@@ -66,7 +58,7 @@ export function MemosScreen() {
   const onDelete = (id: string) => del.mutate(id);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 md:p-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 md:p-6">
       <QuickRecord
         title={title}
         setTitle={setTitle}

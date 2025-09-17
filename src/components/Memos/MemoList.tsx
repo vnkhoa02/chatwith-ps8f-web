@@ -18,22 +18,24 @@ export function MemoList({ memos, view, onToggleFav, onDelete }: Props) {
     );
   }
   return (
-    <div
-      className={
-        view === "grid"
-          ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
-          : "flex flex-col gap-3"
-      }
-    >
-      {memos.map((m) => (
-        <MemoCard
-          key={m.id}
-          data={m}
-          view={view}
-          onToggleFav={onToggleFav}
-          onDelete={onDelete}
-        />
-      ))}
+    <div className="relative">
+      <div
+        className={
+          (view === "grid"
+            ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            : "flex flex-col gap-3") + " max-h-[60vh] overflow-y-auto pr-1"
+        }
+      >
+        {memos.map((m) => (
+          <MemoCard
+            key={m.id}
+            data={m}
+            view={view}
+            onToggleFav={onToggleFav}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
     </div>
   );
 }
