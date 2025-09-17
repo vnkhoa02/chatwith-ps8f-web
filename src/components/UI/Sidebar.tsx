@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Plus, Settings, User } from "lucide-react";
+import { LogOut, Plus, Settings, Star, User } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Sidebar() {
@@ -35,10 +36,24 @@ export default function Sidebar() {
           <span>New chat</span>
         </Button>
       </div>
-      <Separator className="my-3" />
-      <div className="text-muted-foreground mb-2 px-3 text-xs font-medium tracking-wide">
-        {!collapsed ? "RECENTS" : "R"}
+      <div className="flex cursor-pointer items-center gap-2 px-3 pt-3">
+        <Link href={"/memos"} className="w-full">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="col-span-5 w-full justify-start gap-2"
+          >
+            <Star className="h-4 w-4" />
+            <span>Moments</span>
+          </Button>
+        </Link>
       </div>
+      <Separator className="my-3" />
+      {!collapsed && (
+        <div className="text-muted-foreground mb-2 px-3 text-xs font-medium tracking-wide">
+          {"RECENTS"}
+        </div>
+      )}
       <ScrollArea className="flex-1 px-2">
         <div className="flex flex-col gap-1 pb-8">
           {chats.map((c) => (
