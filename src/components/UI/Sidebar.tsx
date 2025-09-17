@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Plus, Settings, Star, User } from "lucide-react";
+import { LogOut, Mic, Plus, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -43,8 +43,8 @@ export default function Sidebar() {
             variant="secondary"
             className="col-span-5 w-full justify-start gap-2"
           >
-            <Star className="h-4 w-4" />
-            <span>Moments</span>
+            <Mic className="h-4 w-4" />
+            <span>Memos</span>
           </Button>
         </Link>
       </div>
