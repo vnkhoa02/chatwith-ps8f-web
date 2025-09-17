@@ -13,22 +13,6 @@ export default function ChatWindow() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const handleFiles = useCallback((files: FileList | null) => {
-    if (!files) return;
-    const newOnes: AttachmentBase[] = Array.from(files).map((f) => ({
-      id: crypto.randomUUID(),
-      kind: f.type.startsWith("image") ? "image" : "file",
-      name: f.name,
-      size: f.size,
-      file: f,
-      mimeType: f.type,
-      previewUrl: f.type.startsWith("image")
-        ? URL.createObjectURL(f)
-        : undefined,
-    }));
-    setAttachments((prev) => [...prev, ...newOnes]);
-  }, []);
-
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -83,7 +67,7 @@ export default function ChatWindow() {
           input={input}
           setInput={setInput}
           attachments={attachments}
-          onFiles={handleFiles}
+          onFiles={(atts) => setAttachments(atts)}
           onSend={onSend}
           recording={recording}
           startRecording={startRecording}
