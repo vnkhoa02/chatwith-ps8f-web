@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Mic, Plus, Settings, User } from "lucide-react";
+import { LogOut, Mic, Plus, Settings, Star, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -35,6 +35,19 @@ export default function Sidebar() {
           <Plus className="h-4 w-4" />
           <span>New chat</span>
         </Button>
+      </div>
+
+      <div className="flex cursor-pointer items-center gap-2 px-3 pt-3">
+        <Link href={"/moments"} className="w-full">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="col-span-5 w-full justify-start gap-2"
+          >
+            <Star className="h-4 w-4" />
+            <span>Moments</span>
+          </Button>
+        </Link>
       </div>
       <div className="flex cursor-pointer items-center gap-2 px-3 pt-3">
         <Link href={"/memos"} className="w-full">
