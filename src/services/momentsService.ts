@@ -53,6 +53,7 @@ const mockData: MomentItem[] = (() => {
       tags: src.tags,
       activityMinutes: src.minutes,
       isFavorite: i % 7 === 0,
+      images: [],
     } satisfies MomentItem;
   });
 })();
@@ -85,5 +86,66 @@ export const momentsService = {
       };
       return mockData[idx];
     }
+  },
+
+  async create(input: {
+    title: string;
+    description: string;
+    tags?: string[];
+    label?: string; // ignored in mock but kept for shape
+    audioBase64?: string;
+    images?: string[];
+    category?: MomentCategory;
+  }): Promise<MomentItem> {
+    await delay(200);
+    const id = String(mockData.length + 1);
+    const item: MomentItem = {
+      id,
+      title: input.title,
+      description: input.description,
+      createdAt: new Date().toISOString(),
+      category: input.category ?? "Work",
+      tags: input.tags ?? [],
+      activityMinutes: 10,
+      isFavorite: false,
+      images: input.images ?? [],
+      audioBase64: input.audioBase64,
+    };
+    mockData.unshift(item);
+    return item;
+  },
+
+  async update(
+    id: string,
+    input: Partial<{
+      title: string;
+      description: string;
+      tags: string[];
+      label: string;
+      images: string[];
+      audioBase64: string;
+      category: MomentCategory;
+    }>,
+  ): Promise<MomentItem | undefined> {
+    await delay(200);
+    const idx = mockData.findIndex((m) => m.id === id);
+    if (idx < 0) return;
+    const current = mockData[idx]!;
+    mockData[idx] = {
+      ...current,
+      ...input,
+      images: input.images ?? current.images,
+      audioBase64: input.audioBase64 ?? current.audioBase64,
+    } as MomentItem;
+    console.log("Updated moment", mockData[idx]);
+    return mockData[idx];
+  },
+
+  async delete(id: string): Promise<boolean> {
+    await delay(150);
+    const idx = mockData.findIndex((m) => m.id === id);
+    if (idx < 0) return false;
+    mockData.splice(idx, 1);
+    return true;
   },
 };

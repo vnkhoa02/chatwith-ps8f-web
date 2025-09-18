@@ -1,10 +1,5 @@
 "use client";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { momentsService } from "@/services/momentsService";
 import type { MomentCategory } from "@/types/moment";
 
@@ -57,5 +52,30 @@ export function useToggleMomentFavorite() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["moments"] });
     },
+  });
+}
+
+export function useCreateMoment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: momentsService.create,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["moments"] }),
+  });
+}
+
+export function useUpdateMoment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      momentsService.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["moments"] }),
+  });
+}
+
+export function useDeleteMoment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => momentsService.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["moments"] }),
   });
 }

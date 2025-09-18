@@ -2,14 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { MomentItem } from "@/types/moment";
-import { MoreHorizontal, Star, StarOff } from "lucide-react";
+import { MoreHorizontal, Star, StarOff, Trash2 } from "lucide-react";
 
 export default function MomentCard({
   data,
   onToggleFav,
+  onEdit,
+  onDelete,
 }: {
   data: MomentItem;
   onToggleFav: (id: string) => void;
+  onEdit?: (item: MomentItem) => void;
+  onDelete?: (id: string) => void;
 }) {
   return (
     <div className="bg-card relative rounded-md border p-4 text-sm shadow-sm">
@@ -19,6 +23,7 @@ export default function MomentCard({
           <p className="text-muted-foreground mt-1 text-xs">
             {data.description}
           </p>
+          {/* Intentionally hide images and audio in list view as requested */}
           <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-3 text-[11px]">
             <span>{new Date(data.createdAt).toLocaleString()}</span>
             <span>{data.category}</span>
@@ -48,9 +53,25 @@ export default function MomentCard({
               <StarOff className="h-4 w-4" />
             )}
           </Button>
-          <Button variant="ghost" size="icon" aria-label="More">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Edit"
+            onClick={() => onEdit?.(data)}
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Delete"
+              onClick={() => onDelete?.(data.id)}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -9,6 +9,8 @@ export interface MomentItem {
   tags: string[];
   activityMinutes: number;
   isFavorite: boolean;
+  images?: string[];
+  audioBase64?: string;
 }
 
 export interface MomentQueryParams {
