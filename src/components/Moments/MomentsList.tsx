@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   useInfiniteMoments,
   useToggleMomentFavorite,
@@ -8,6 +9,7 @@ import {
 } from "@/hooks/useMoments";
 import type { MomentCategory, MomentItem } from "@/types/moment";
 import MomentCard from "./MomentCard";
+import { useState } from "react";
 
 export default function MomentsList({
   category,
@@ -24,6 +26,26 @@ export default function MomentsList({
 
   const toggleFav = useToggleMomentFavorite();
   const del = useDeleteMoment();
+
+  // Delete confirmation dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const requestDelete = (id: string) => {
+    setPendingDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDeleteId) return;
+    del.mutate(pendingDeleteId, {
+      onSuccess: () => onDeleted?.(pendingDeleteId),
+      onSettled: () => {
+        setConfirmOpen(false);
+        setPendingDeleteId(null);
+      },
+    });
+  };
 
   const flat = data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -45,9 +67,7 @@ export default function MomentsList({
               data={m}
               onToggleFav={toggleFav.mutate}
               onEdit={onEdit}
-              onDelete={(id) =>
-                del.mutate(id, { onSuccess: () => onDeleted?.(id) })
-              }
+              onDelete={(id) => requestDelete(id)}
             />
           ))}
 
@@ -64,6 +84,29 @@ export default function MomentsList({
           )}
         </div>
       </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete this moment?</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground text-sm">
+            This action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={del.isPending}
+            >
+              {del.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

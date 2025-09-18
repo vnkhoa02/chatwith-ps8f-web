@@ -5,6 +5,7 @@ interface AudioState {
   isRecording: boolean;
   durationSec: number;
   base64?: string; // pure base64 (no data: prefix)
+  mimeType?: string; // detected/selected audio mime type
 }
 
 /**
@@ -36,9 +37,10 @@ export function useAudioRecorder() {
   const start = useCallback(async () => {
     if (mediaRecorderRef.current) return;
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chosen = pickMime();
     const mr = new MediaRecorder(
       stream,
-      pickMime() ? { mimeType: pickMime()! } : undefined,
+      chosen ? { mimeType: chosen } : undefined,
     );
     chunksRef.current = [];
     mr.ondataavailable = (e) => {
@@ -47,7 +49,11 @@ export function useAudioRecorder() {
     mr.start();
     mediaRecorderRef.current = mr;
     startedAtRef.current = Date.now();
-    setState({ isRecording: true, durationSec: 0 });
+    setState({
+      isRecording: true,
+      durationSec: 0,
+      mimeType: mr.mimeType || chosen,
+    });
     durationTimerRef.current = window.setInterval(() => {
       if (startedAtRef.current) {
         const dur = Math.round((Date.now() - startedAtRef.current) / 1000);
@@ -85,7 +91,12 @@ export function useAudioRecorder() {
               ? (Date.now() - startedAtRef.current) / 1000
               : 0,
           );
-          setState({ isRecording: false, base64, durationSec });
+          setState((s) => ({
+            isRecording: false,
+            base64,
+            durationSec,
+            mimeType: s.mimeType || mr.mimeType || "audio/webm",
+          }));
         } finally {
           if (durationTimerRef.current)
             window.clearInterval(durationTimerRef.current);

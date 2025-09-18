@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useUpload } from "@/hooks/useUpload";
-import { Mic, Square, Upload as UploadIcon, X } from "lucide-react";
+import { Mic, Square, Upload as UploadIcon, X, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export interface MomentFormValues {
@@ -36,7 +36,7 @@ export default function MomentForm({
   const [imageUrls, setImageUrls] = useState<string[]>(initial?.images ?? []);
 
   // Audio
-  const { isRecording, durationSec, start, stop, base64, reset } =
+  const { isRecording, durationSec, start, stop, base64, reset, mimeType } =
     useAudioRecorder();
   const [audioBase64, setAudioBase64] = useState<string | undefined>(
     initial?.audioBase64,
@@ -93,7 +93,34 @@ export default function MomentForm({
       }
     }
     setImageUrls((prev) => [...prev, ...urls]);
+    // clear local previews and files after successful upload
     setImageFiles([]);
+    setPreviewUrls((prev) => {
+      prev.forEach((u) => URL.revokeObjectURL(u));
+      return [];
+    });
+  };
+
+  const removeLocalPreview = (idx: number) => {
+    setPreviewUrls((prev) => {
+      const copy = [...prev];
+      const [removed] = copy.splice(idx, 1);
+      if (removed) URL.revokeObjectURL(removed);
+      return copy;
+    });
+    setImageFiles((prev) => {
+      const copy = [...prev];
+      copy.splice(idx, 1);
+      return copy;
+    });
+  };
+
+  const removeUploadedImage = (idx: number) => {
+    setImageUrls((prev) => {
+      const copy = [...prev];
+      copy.splice(idx, 1);
+      return copy;
+    });
   };
 
   const handleSubmit = async () => {
@@ -213,7 +240,13 @@ export default function MomentForm({
       {/* Playback (if recorded) */}
       {audioBase64 && !isRecording ? (
         <div className="-mt-2">
-          <audio controls src={`data:audio/webm;base64,${audioBase64}`} />
+          <audio controls className="w-full">
+            <source
+              src={`data:${mimeType || "audio/webm"};base64,${audioBase64}`}
+              type={mimeType || "audio/webm"}
+            />
+            Your browser does not support the audio element.
+          </audio>
         </div>
       ) : null}
 
@@ -245,21 +278,39 @@ export default function MomentForm({
 
       {previewUrls.length || imageUrls.length ? (
         <div className="mt-2 flex flex-wrap gap-2">
-          {previewUrls.map((u) => (
-            <img
-              key={u}
-              src={u}
-              alt="local preview"
-              className="h-20 w-20 rounded object-cover"
-            />
+          {previewUrls.map((u, i) => (
+            <div key={u} className="relative">
+              <img
+                src={u}
+                alt="local preview"
+                className="h-20 w-20 rounded object-cover"
+              />
+              <button
+                type="button"
+                aria-label="Remove image"
+                onClick={() => removeLocalPreview(i)}
+                className="bg-background/80 hover:bg-background absolute -right-2 -top-2 rounded-full border p-1 shadow"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
-          {imageUrls.map((u) => (
-            <img
-              key={u}
-              src={u}
-              alt="uploaded"
-              className="h-20 w-20 rounded object-cover"
-            />
+          {imageUrls.map((u, i) => (
+            <div key={u} className="relative">
+              <img
+                src={u}
+                alt="uploaded"
+                className="h-20 w-20 rounded object-cover"
+              />
+              <button
+                type="button"
+                aria-label="Remove image"
+                onClick={() => removeUploadedImage(i)}
+                className="bg-background/80 hover:bg-background absolute -right-2 -top-2 rounded-full border p-1 shadow"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
         </div>
       ) : null}
