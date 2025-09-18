@@ -14,7 +14,7 @@ export default function ChatLayout({
       <NavBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="bg-card flex flex-1 flex-col overflow-hidden border-l">
+        <main className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden border-l">
           {children}
         </main>
       </div>
