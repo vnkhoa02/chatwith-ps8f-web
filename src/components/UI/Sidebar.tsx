@@ -1,8 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/provider/AuthProvider";
 import {
   LogOut,
   MessageCircle,
@@ -16,7 +24,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function Sidebar() {
+  const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const chats = [
     { id: "1", title: "Project planning discussion" },
     { id: "2", title: "Creative writing ideas" },
@@ -113,11 +124,50 @@ export default function Sidebar() {
             <Settings className="h-4 w-4" />
             {!collapsed && <span>Settings</span>}
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Logout">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Logout"
+            onClick={() => setConfirmOpen(true)}
+          >
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
+      {/* Sign out confirmation dialog */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign out?</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground text-sm">
+            You will be logged out of your account.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+              disabled={signingOut}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                try {
+                  setSigningOut(true);
+                  await signOut();
+                } finally {
+                  setSigningOut(false);
+                  setConfirmOpen(false);
+                }
+              }}
+            >
+              {signingOut ? "Signing out..." : "Sign out"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 }
